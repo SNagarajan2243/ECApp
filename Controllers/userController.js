@@ -427,6 +427,10 @@ exports.allUser = async (req,res,next) => {
 
 exports.adminMemberApprovalHandler = async (req,res,next) => {
 
+
+
+    
+
     try{
 
         const {id,club} = req.params

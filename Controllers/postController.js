@@ -352,6 +352,8 @@ exports.addComment = async (req,res,next)=>{
 exports.addLikes = async (req,res,next) => {
     try{
 
+        console.log(req.body.like)
+
         const likeAdded = 'Like Added'
 
         const likeRemoved = 'Like Removed'
