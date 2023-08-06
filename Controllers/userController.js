@@ -441,7 +441,7 @@ exports.adminMemberApprovalHandler = async (req,res,next) => {
 
         const {user,approvalStatus} = req.body
 
-        if(!user || approvalStatus!==undefined){
+        if(!user || approvalStatus===undefined){
             return res.status(400).json({
                 status: 'fail',
                 requestAt: req.requestTime,
