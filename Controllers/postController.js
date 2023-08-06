@@ -258,7 +258,9 @@ exports.getPosts = async (req,res,next)=>{
             }
 
             const clubName = clubs.filter(club => club.clubId===post.clubId).map(club => club.clubName)[0]
-            post = {...post,clubName}
+            const clubLogoName = clubs.filter(club => club.clubId===post.clubId).map(club => club.image)[0]
+            const clubLogo = `${req.protocol}://${req.get('host')}/${clubLogoName}`
+            post = {...post,clubName,clubLogo}
             return post
         })
     

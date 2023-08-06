@@ -12,7 +12,19 @@ const clubSchema = new mongoose.Schema({
         required: [true,'A club must have a clubName'],
         unique: true
     },
+    imgName: {
+        type: String,
+        default: ''
+    },
     
+},{
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
+})
+
+clubSchema.virtual('image').get(function(){
+    console.log(this.imgName)
+    return `images/logos/${this.imgName}`
 })
 
 const Club = mongoose.model('Club',clubSchema)

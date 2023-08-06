@@ -56,7 +56,7 @@ exports.getJoinableClub = async (req,res,next) => {
 
         console.log(userClubIdList)
         
-        const clubs = await Club.find().select('-_id -__v')
+        const clubs = await Club.find().select('-_id -__v -imgName -image')
         
         // const userClubList = clubs.filter(club => userClubIdList.includes(club.clubId)).map(club => club.clubName)
 

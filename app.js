@@ -22,6 +22,8 @@ app.use(express.json())
 
 app.use('/images/posts/',express.static(`${__dirname}/images/posts`))
 
+app.use('/images/logos/',express.static(`${__dirname}/images/logos`))
+
 app.use(morgan('dev'))
 
 app.use(cors({
