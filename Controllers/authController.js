@@ -53,6 +53,12 @@ exports.checkUserExist = async (req,res,next) => {
                 message: 'User Not Found'
             })
         }
+
+        console.log(user.profileName)
+
+        if(user.profileName){
+            user._doc.profileLink = `${req.protocol}://${req.get('host')}/${user.profilePath}`
+        }
         
         req.body.user = user
     }

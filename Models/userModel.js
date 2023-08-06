@@ -53,6 +53,12 @@ const userSchema = new mongoose.Schema({
     passwordChangedAt: Date,
 })
 
+userSchema.virtual('profilePath').get(function(){
+    // console.log(this.imgName)
+    if(this.profileName)
+        return `images/logos/${this.profileName}`
+})
+
 userSchema.methods.correctPassword = async function(candidatePassword,userPassword){
     return await bcrypt.compare(candidatePassword,userPassword)
 }
