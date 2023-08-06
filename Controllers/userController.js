@@ -584,6 +584,8 @@ exports.profileImageHandler = async (req,res,next) => {
 
         const imgName = req.body.originalname
 
+        console.log(req.file)
+
         console.log(req.body.originalname)
 
         // console.log(user.firstName)
