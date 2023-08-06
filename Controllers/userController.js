@@ -582,7 +582,9 @@ exports.profileImageHandler = async (req,res,next) => {
         
         const user = await User.findById(id).select('-passwordChangedAt -password -__v')
 
-        const imgName = req.file.originalname
+        const imgName = req.body.originalname
+
+        console.log(req.body.originalname)
 
         // console.log(user.firstName)
 
