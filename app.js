@@ -24,6 +24,8 @@ app.use('/images/posts/',express.static(`${__dirname}/images/posts`))
 
 app.use('/images/logos/',express.static(`${__dirname}/images/logos`))
 
+app.use('/images/profile/',express.static(`${__dirname}/images/profile`))
+
 app.use(morgan('dev'))
 
 app.use(cors({
