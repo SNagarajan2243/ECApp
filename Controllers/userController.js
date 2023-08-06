@@ -427,10 +427,6 @@ exports.allUser = async (req,res,next) => {
 
 exports.adminMemberApprovalHandler = async (req,res,next) => {
 
-
-
-    
-
     try{
 
         const {id,club} = req.params
@@ -445,7 +441,7 @@ exports.adminMemberApprovalHandler = async (req,res,next) => {
 
         const {user,approvalStatus} = req.body
 
-        if(!user || approvalStatus===undefined){
+        if(!user || approvalStatus!==undefined){
             return res.status(400).json({
                 status: 'fail',
                 requestAt: req.requestTime,
