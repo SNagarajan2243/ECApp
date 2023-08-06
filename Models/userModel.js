@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    profileName: {
+        type: String,
+    },
     // role: {
     //     type: String,
     //     enum: [

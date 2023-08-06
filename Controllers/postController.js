@@ -57,7 +57,6 @@ exports.createPost = async (req,res,next)=>{
                 requestAt: req.requestTime,
                 message: 'You are not Authorized to create post for this club'
             })
-
         }
 
         //--------------------------Check for image----------------------------------//

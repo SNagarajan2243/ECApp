@@ -4,7 +4,32 @@ const Club = require('./../Models/clubModel')
 
 const ClubUser = require('./../Models/clubUserModel')
 
+const fs = require('fs')
+
+const jwt = require('jsonwebtoken')
+
 const bcrypt = require('bcryptjs')
+
+const jwtDecrypt = (token) => jwt.verify(token,process.env.JWT_SECRET)
+
+const checkImageAccess = (imgName) => {
+
+    // console.log(imgName)
+
+    return new Promise((resolve, reject) => {
+
+        fs.access(`${__dirname}/../images/profile/${imgName}`, (err) => {
+            if (err) {
+                reject({
+                    message: 'Image Not Provided or Not Saved'
+                })
+            } else {
+                resolve()
+            }
+
+        })
+    })
+}
 
 // const jwt = require('jsonwebtoken')
 
@@ -541,6 +566,73 @@ exports.adminMemberApprovalHandler = async (req,res,next) => {
             message: err.message
         })
 
+    }
+
+}
+
+exports.profileImageHandler = async (req,res,next) => {
+
+    try{
+
+        // const {user} = req.body
+
+        const token = req.headers.authorization.split(' ')[1]
+
+        const {id} = jwtDecrypt(token)
+        
+        const user = await User.findById(id).select('-passwordChangedAt -password -__v')
+
+        const imgName = req.file.originalname
+
+        // console.log(user.firstName)
+
+        checkImageAccess(imgName)
+
+        if(!user){
+
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'User Not Found'
+            })
+
+        }
+
+
+        user.profileName = imgName
+
+        await user.save()
+        
+        return res.status(200).json({
+            status: 'success',
+            requestAt: req.requestTime,
+            message: 'Profile Image Uploaded'
+        })
+
+    }
+    catch(err){
+
+        fs.access(`${__dirname}/../images/profile/${req.file.originalname}`, (err) => {
+            if (err) {
+              return
+            }
+            // If the file exists, delete it
+            fs.unlink(`${__dirname}/../images/profile/${req.file.originalname}`, (err) => {
+                if (err) {
+                    console.error('Error: Unable to delete the file.', err)
+                } else {
+                    console.log('File deleted successfully.')
+                }
+            })
+        })
+
+        console.log(err)
+        console.log('Error in Profile Image Handler Controller')
+        return res.status(500).json({
+            status: 'error',
+            requestAt: req.requestTime,
+            message: err.name|| 'Error Found'
+        })
     }
 
 }

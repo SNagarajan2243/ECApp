@@ -4,11 +4,49 @@ const express = require('express')
 
 const {checkUserExist} = require('./../Controllers/authController')
 
-const {createUserDetails,getUser,searchDonor,updateUserDetail,allUser,adminMemberApprovalHandler}  = require('./../Controllers/userController')
+const {createUserDetails,getUser,searchDonor,updateUserDetail,allUser,adminMemberApprovalHandler,profileImageHandler}  = require('./../Controllers/userController')
 
 // const {joinClub,getJoinableClub,checkPriviledge,getRequestList,memberApprovalHandler} = require('./../Controllers/clubController')
 
 const router = express.Router()
+
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+
+    destination: function (req, file, cb) {
+
+      cb(null, 'images/profile');
+
+    },
+    filename: function (req, file, cb) {
+
+      // Use a unique name for the uploaded file (e.g., timestamp + original file extension)
+      const uniqueName = file.originalname;
+
+      cb(null, uniqueName);
+
+    },
+});
+  
+const fileFilter = (req, file, cb) => {
+
+    // Only accept image files (modify the MIME types as per your requirements)
+    if (file.mimetype.startsWith('image/')) {
+
+      cb(null, true);
+
+    } else {
+      // Reject a file (pass false) if it is not an image
+      cb(null, false);
+      
+    }
+};
+  
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+});
 
 // router.route('/signupemail').post(generateRandomPassword)
 
@@ -27,6 +65,8 @@ router.route('/donor').get(checkUserExist,searchDonor)
 router.route('/request').get(checkUserExist,allUser)
 
 router.route('/request/:id/:club').post(checkUserExist,adminMemberApprovalHandler)
+
+router.route('/user/profileimage').patch(checkUserExist,upload.single('image'),profileImageHandler)
 
 // router.route('/request').get(checkUserExist,checkPriviledge,getRequestList)
 
