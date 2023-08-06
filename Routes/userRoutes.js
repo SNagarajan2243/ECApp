@@ -66,7 +66,14 @@ router.route('/request').get(checkUserExist,allUser)
 
 router.route('/request/:id/:club').post(checkUserExist,adminMemberApprovalHandler)
 
-router.route('/user/profileimage').patch(checkUserExist,upload.single('image'),profileImageHandler)
+router.route('/user/profileimage').patch(checkUserExist,upload.single('image'),(req,res,next)=>res.status(200).json({
+    status: 'success',
+    requestAt: req.requestTime,
+    message: 'Profile Image Uploaded'
+    })
+)
+
+router.route('/user/profileimagename').patch(checkUserExist,profileImageHandler)
 
 // router.route('/request').get(checkUserExist,checkPriviledge,getRequestList)
 

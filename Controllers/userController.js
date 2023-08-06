@@ -584,8 +584,6 @@ exports.profileImageHandler = async (req,res,next) => {
 
         const imgName = req.body.originalname
 
-        console.log(req.file)
-
         console.log(req.body.originalname)
 
         // console.log(user.firstName)
@@ -616,12 +614,12 @@ exports.profileImageHandler = async (req,res,next) => {
     }
     catch(err){
 
-        fs.access(`${__dirname}/../images/profile/${req.file.originalname}`, (err) => {
+        fs.access(`${__dirname}/../images/profile/${req.body.originalname}`, (err) => {
             if (err) {
               return
             }
             // If the file exists, delete it
-            fs.unlink(`${__dirname}/../images/profile/${req.file.originalname}`, (err) => {
+            fs.unlink(`${__dirname}/../images/profile/${req.body.originalname}`, (err) => {
                 if (err) {
                     console.error('Error: Unable to delete the file.', err)
                 } else {
