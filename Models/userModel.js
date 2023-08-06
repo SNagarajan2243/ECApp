@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema({
 userSchema.virtual('profilePath').get(function(){
     // console.log(this.imgName)
     if(this.profileName)
-        return `images/logos/${this.profileName}`
+        return `images/profile/${this.profileName}`
 })
 
 userSchema.methods.correctPassword = async function(candidatePassword,userPassword){
