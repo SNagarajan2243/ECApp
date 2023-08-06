@@ -582,6 +582,14 @@ exports.profileImageHandler = async (req,res,next) => {
         
         const user = await User.findById(id).select('-passwordChangedAt -password -__v')
 
+        if(!req.body.originalname){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Please Provide Original Image Name'
+            })
+        }
+
         const imgName = req.body.originalname
 
         console.log(req.body.originalname)
