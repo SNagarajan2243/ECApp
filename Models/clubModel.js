@@ -23,7 +23,7 @@ const clubSchema = new mongoose.Schema({
 })
 
 clubSchema.virtual('image').get(function(){
-    console.log(this.imgName)
+    // console.log(this.imgName)
     return `images/logos/${this.imgName}`
 })
 
