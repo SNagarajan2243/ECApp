@@ -307,6 +307,16 @@ exports.searchDonor = async (req,res,next) => {
 
         user = await user.sort({passwordChangedAt: -1}).select('-passwordChangedAt -password -__v -bloodDonor')
 
+        user = user.map(singleUser => {
+            
+            if(singleUser.profileName){
+                singleUser._doc.profileLink = `${req.protocol}://${req.get('host')}/${singleUser.profilePath}`
+            }
+
+            return singleUser
+            
+        })
+
         return res.status(200).json({
             status: 'success',
             requestAt: req.requestTime,
