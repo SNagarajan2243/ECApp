@@ -14,7 +14,7 @@ mongoose.connect(DB,{}).then(() => console.log(`DB Connection Successfull`))
 .catch(err => console.log(err)
 )
 
-app.listen(3000,'0.0.0.0',()=>{
+app.listen(3000,'10.11.6.27',()=>{
     console.log(`App running on port 3000`)
 })
 

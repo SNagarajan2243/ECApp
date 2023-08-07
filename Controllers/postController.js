@@ -161,9 +161,19 @@ exports.createPost = async (req,res,next)=>{
 
 exports.appCreateImagePost = async (req,res,next)=>{
 
+    console.log(req.headers)
+
     console.log(req.body)
 
     console.log(req.file)
+
+    if(!req.file){
+        return res.status(400).json({
+            status: 'fail',
+            requestAt: req.requestTime,
+            message: 'Please provide image'
+        })
+    }
     
     return res.status(200).json({
         status: 'success',
@@ -199,8 +209,6 @@ exports.getPosts = async (req,res,next)=>{
                         ]
                       }
                     ]
-                }).sort({
-                    createdAt: -1
                 })
                   
             }
@@ -209,7 +217,7 @@ exports.getPosts = async (req,res,next)=>{
                     modes: {
                         $ne: true
                     }
-                }).sort({ createdAt: -1 })
+                })
             }
     
         }
@@ -225,13 +233,11 @@ exports.getPosts = async (req,res,next)=>{
                     modes: {
                         $ne: true
                     }
-                }).sort({
-                    createdAt: -1
                 })
             }
         }
     
-        posts = await posts.find().sort({ createdAt: -1 }).catch(
+        posts = await posts.find().catch(
             err => {
                 console.log(err)
                 console.log(err.message)
