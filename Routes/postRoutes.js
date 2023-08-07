@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
     destination: function (req, file, cb) {
 
-      cb(null, 'images/posts');
+      cb(null, `${__dirname}/images/posts`);
 
     },
     filename: function (req, file, cb) {
@@ -50,7 +50,13 @@ const upload = multer({
     fileFilter: fileFilter,
 });
 
-router.route('/').post(checkUserExist,checkPriviledge,upload.single('image'),(req,res,next)=>res.status(200).json({
+const fileUpload = require('express-fileupload')
+
+router.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 },
+}));
+
+router.route('/').get(checkUserExist,setClubIdList,getPosts).post(checkUserExist,checkPriviledge,upload.single('image'),(req,res,next)=>res.status(200).json({
     status: 'success',
     requestAt: req.requestTime,
     message: 'Post Created'
@@ -61,7 +67,7 @@ router.route('/appPost').post(appCreateImagePost)
 
 router.route('/postDetail').post(checkUserExist,checkPriviledge,createPost)
 
-router.route('/').get(checkUserExist,setClubIdList,getPosts)
+// router.route('/').get(checkUserExist,setClubIdList,getPosts)
 
 router.route('/comments').post(checkUserExist,addComment)
 
