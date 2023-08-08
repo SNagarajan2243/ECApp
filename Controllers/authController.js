@@ -6,13 +6,21 @@ const ClubUser = require('./../Models/clubUserModel')
 
 const {sendEmail} = require('./../utils/email')
 
+const {sendForgotPasswordEmail} = require('./../utils/forgotpasswordemail')
+
 const jwt = require('jsonwebtoken')
+
+const bcrypt = require('bcryptjs')
 
 const jwToken = (id) => jwt.sign({id},process.env.JWT_SECRET,{
     expiresIn: process.env.JWT_EXPIRES_IN
 }) 
 
 const jwtDecrypt = (token) => jwt.verify(token,process.env.JWT_SECRET)
+
+const jwTForPassword = (email) => jwt.sign({email},process.env.JWT_SECRET,{
+    expiresIn: process.env.JWT_EXPIRES_IN_FOR_PASSWORD
+})
 
 const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -319,3 +327,240 @@ exports.login = async (req,res,next) => {
     
 }
 
+exports.forgotPassword = async (req,res,next) => {
+
+    try{
+
+        const {requestTime,body: {email}} = req
+
+        // const unixTimestamp = Math.floor(Date.now() / 1000)
+
+        // console.log(unixTimestamp)
+
+        if(!email){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Please Provide Email'
+            })
+        }
+
+        const user = await User.find({email,passwordChangedAt: {$exists: true}}).select('-__v')
+
+        if(user.length===0){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'No User Exist with this Email or User not completed their registration process'
+            })
+        }
+
+        const token = jwTForPassword(email)
+
+        await sendForgotPasswordEmail(email,token,requestTime)
+
+        return res.status(200).json({
+            status: 'success',
+            requestAt: req.requestTime,
+            message: 'Check your email for reset password link'
+        })
+
+    }
+    catch(err){
+        console.log(err)
+        console.log('Error in forgot password catch')
+        return res.status(500).json({
+            status: 'error',
+            requestAt: req.requestTime,
+            message: err.message || 'Error Found'
+        })
+    }
+
+}
+
+exports.checkLinkValidity = async (req,res,next) => {
+    try{
+
+        if(!req.headers.authorization || (req.headers.authorization.split(' ')[0].toLowerCase() !== 'bearer' || !req.headers.authorization.split(' ')[1])){
+            return res.status(401).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'INVALID_TOKEN or TOKEN_NOT_EXIST',
+            })
+        }
+
+        const token = req.headers.authorization.split(' ')[1]
+
+        const {email,iat,exp} = jwtDecrypt(token)
+
+        console.log(email,iat,exp)
+
+        if(!email || !iat || !exp){
+            return res.status(401).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'INVALID_TOKEN or TOKEN_NOT_EXIST',
+            })
+        }
+
+        const user = await User.find({email})
+        
+        const iatTime = new Date(iat * 1000);
+
+        const curTime = new Date()
+
+        // Calculate the time difference in milliseconds
+        const timeDifferenceInMilliseconds = curTime - iatTime;
+
+        // Convert the time difference to minutes
+        const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 60);
+
+        if(timeDifferenceInMinutes>10){
+            return res.status(403).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Link Expired'
+            })
+        }
+
+        console.log(timeDifferenceInMinutes)
+
+        if(user.length===0){
+            return res.status(401).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'No User Exist with this Email'
+            })
+        }
+
+        const newToken = jwTForPassword(email)
+
+        return res.status(200).json({
+            status: 'success',
+            requestAt: req.requestTime,
+            newToken,
+            message: 'Link is valid'
+        })
+
+    }
+    catch(err){
+        console.log(err)
+        console.log('Error in check link validity catch')
+
+        if(err.name==='TokenExpiredError')
+            err.message = 'Link Expired'
+
+        return res.status(500).json({
+            status: 'error',
+            requestAt: req.requestTime,
+            message: err.message || 'Error Found'
+        })
+    }
+}
+
+exports.changePassword = async (req,res,next) => {
+
+    try{
+
+        if(!req.headers.authorization || (req.headers.authorization.split(' ')[0].toLowerCase() !== 'bearer' || !req.headers.authorization.split(' ')[1])){
+            return res.status(401).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'INVALID_TOKEN or TOKEN_NOT_EXIST',
+            })
+        }
+
+        const token = req.headers.authorization.split(' ')[1]
+
+        const {email,iat,exp} = jwtDecrypt(token)
+
+        console.log(email,iat,exp)
+
+        const {password} = req.body
+
+        if(!password){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Please Provide Password'
+            })
+        }
+
+        console.log(password)
+
+        if(!email || !iat || !exp){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'INVALID_TOKEN or TOKEN_NOT_EXIST',
+            })
+        }
+
+        if(password.length<4){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Password length should be greater than 4'
+            })
+        }
+
+        const user = await User.find({email,passwordChangedAt: {$exists: true}}).select('-__v')
+
+        if(user.length===0){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'No User Exist with this Email or User not completed their registration process'
+            })
+        }
+
+        // const iatTime = new Date(iat * 1000);
+
+        // const curTime = new Date()
+
+        // // Calculate the time difference in milliseconds
+        // const timeDifferenceInMilliseconds = curTime - iatTime;
+
+        // // Convert the time difference to minutes
+        // const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 60);
+
+        // if(timeDifferenceInMinutes>10){
+        //     return res.status(403).json({
+        //         status: 'fail',
+        //         requestAt: req.requestTime,
+        //         message: 'Link Expired'
+        //     })
+        // }
+
+        const newPassword = await bcrypt.hash(req.body.password,12)
+
+        const newPasswordChangedAt = Date.now()
+
+        const newUpdate = await User.findByIdAndUpdate(user[0]._id,{password: newPassword,passwordChangedAt: newPasswordChangedAt})
+
+        if(!newUpdate){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Password Not Changed'
+            })
+        }
+
+        return res.status(200).json({
+            status: 'success',
+            requestAt: req.requestTime,
+            message: 'Password Changed Successfully'
+        })
+
+    }
+    catch(err){
+        console.log(err)
+        console.log('Error in change password catch')
+        return res.status(500).json({
+            status: 'error',
+            requestAt: req.requestTime,
+            message: err.message || 'Error Found'
+        })
+    }
+
+}
