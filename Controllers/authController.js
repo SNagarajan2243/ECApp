@@ -564,3 +564,72 @@ exports.changePassword = async (req,res,next) => {
     }
 
 }
+
+exports.changePasswordWithOldPassword = async (req,res,next) => {
+
+    try{
+
+        const {user} = req.body
+
+        const {oldPassword,newPassword} = req.body
+
+        if(!oldPassword || !newPassword){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Please Provide Old Password and New Password'
+            })
+        }
+
+        if(oldPassword.length<4 || newPassword.length<4){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Password length should be greater than 4'
+            })
+        }
+
+        const {password} = await User.findById(user._id).select('+password')
+        
+        const isPasswordCorrect = await user.correctPassword(oldPassword,password)
+        
+        if(!isPasswordCorrect){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Please Provide Correct Old Password'
+            })
+        }
+
+        const newPasswordChangedAt = Date.now()
+
+        const newPasswordHash = await bcrypt.hash(newPassword,12)
+
+        const newUserUpdation = await User.findByIdAndUpdate(user._id,{password: newPasswordHash,passwordChangedAt: newPasswordChangedAt})
+
+        if(!newUserUpdation){
+            return res.status(400).json({
+                status: 'fail',
+                requestAt: req.requestTime,
+                message: 'Password Not Changed'
+            })
+        }
+
+        return res.status(200).json({
+            status: 'success',
+            requestAt: req.requestTime,
+            message: 'Password Changed Successfully'
+        })
+
+    }
+    catch(err){
+        console.log(err)
+        console.log('Error in change password with old password catch')
+        return res.status(500).json({
+            status: 'error',
+            requestAt: req.requestTime,
+            message: err.message || 'Error Found'
+        })
+    }
+
+}
