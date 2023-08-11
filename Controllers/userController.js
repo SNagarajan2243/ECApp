@@ -417,7 +417,9 @@ exports.allUser = async (req,res,next) => {
             })
         }
 
-        const users = await User.find().select('-__v')
+        const users = await User.find({
+            passwordChangedAt: {$ne: null}
+        }).select('-__v')
 
         const clubUser = await ClubUser.find().select('-_id -__v')
 
